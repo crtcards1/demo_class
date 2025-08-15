@@ -1,0 +1,15 @@
+*.pem
+*.txt
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfplan
+*.log
+*.bak
+*.swp
+*.tmp
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
