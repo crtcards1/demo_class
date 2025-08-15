@@ -35,7 +35,7 @@ mv 2025-01-22-traffic-analysis-exercise.pcap dark_kittens.pcap
 ```
 
 If we run the `ls` command, we can see our `dark_kittens.pcap` file is ready for analysis. 
-   ![Prepare_triage](1.png)
+   ![Prepare_triage](Screenshots/1.png)
 
 ---
 ### **Step 2 — First Pass with `tshark`: Top Talkers**
@@ -52,7 +52,7 @@ tshark -r dark_kittens.pcap -q -z conv,ip 2>/dev/null | head -n 20
 - `| head -n 20` ->  Limit the output to the first 20 lines for readability.
 
 
-![tshark-top-talkers](2.png)
+![tshark-top-talkers](Screenshots/2.png)
 Using the Tshark IP conversation summary, we can see that the internal host **`10.1.17.215`**  is communicating heavily with a range of external IP addresses.
 
 We also see that **45.125.66.32** and **5.252.153.241** dominate the conversation table. This pattern immediately raises suspicion. We have large outbound transfers that could indicate exfiltration of sensitive information, perhaps orchestrated by the Dark Kittens. 
@@ -83,10 +83,10 @@ tshark -r dark_kittens.pcap -Y "dns" -T fields -e ip.src -e ip.dst -e dns.qry.na
 - `head -n 60` ->  Limit the output to the first 60 lines for readability.
 
 While there are a lot of results to sift through, we can see that there are a few that stand out. 
-![](3.png)
+![](Screenshots/3.png)
 **authenticatoor.org**
 
-![](4.png)
+![](Screenshots/4.png)
 **google-authenticator.burleson-appliance.net**
 
 ---
@@ -104,7 +104,7 @@ Run:
 cd /etc/snort/rules
 sudo nano local.rules
 ```
-![snort_dir](5.png)
+![snort_dir](Screenshots/5.png)
 
 Inside the local.rules, we want to paste the following. 
 ```bash
@@ -116,7 +116,7 @@ alert ip any any -> 45.125.66.252 any (msg:"Dark Kittens C2 detected - 45.125.66
 In a Snort rule, each component serves a specific purpose. The `alert ip any any -> <IP> any` portion tells Snort to monitor **all IP traffic from any source to the specified target IP on any port**, ensuring no communication to the malicious host goes unnoticed. The `msg` field provides a custom message that we can modify that will appear in the alert output, helping us to  quickly understand what triggered the rule. Every rule requires a unique Snort ID (`sid`) so that it can be referenced and managed independently, while the `rev` field represents the **revision number** of the rule, allowing you to track updates or changes over time. 
 
 
-![snort_rules](6.png)
+![snort_rules](Screenshots/6.png)
 To save our changes we enter `Control + X` to exit, type `Y` to confirm saving our newly written snort rules, and `enter`.
 
 With our custom Snort rules in place for the Dark Kittens C2 IPs, we now verify that our defensive measures are effective. By running Snort in PCAP mode against `dark_kittens.pcap`, any attempts by the internal host to communicate with the identified C2 IPs (`5.252.153.241`, `45.125.66.32`, `45.125.66.252`) will trigger alerts directly in the console. First, were going to create a quick custom snort.conf file for testing purpose, so we don't test against all the snort rules in the system.
@@ -150,7 +150,7 @@ sudo snort -T -c /etc/snort/snort_local.conf
 ```
 
 If all goes well, you should see a successful message:
-![snort_rules](7.png)
+![snort_rules](Screenshots/7.png)
 
 Now we need to test our rules we created against the `dark_kittens.pcap`:
 ```bash
