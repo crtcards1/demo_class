@@ -34,10 +34,5 @@ cd "$LAB_DIR" # Change to lab directory
 wget "$PCAP_URL"  # Download the PCAP file
 sudo chown ubuntu:ubuntu -R $LAB_DIR # Ensure the user owns the zip file
 
-#unzip -P "$PCAP_PW" $LAB_DIR/*.zip  # Unzip the PCAP file into the lab directory
-#mv $LAB_DIR/*.pcap "$LAB_DIR/$PCAP_OUT" # renaming 
-#rm $LAB_DIR/*.zip # Remove the zip file after extrac
-#sudo chown ubuntu:ubuntu "$PCAP_OUT" # Ensure the user owns the PCAP file
-
 # Prepare Snort with basic rule set pre-added, maybe change to have learner modify it 
 echo "include \$RULE_PATH/local.rules" >> /etc/snort/snort.conf
