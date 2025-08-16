@@ -29,7 +29,7 @@ sudo ./setup.sh
 
 # Learner Instructions
 
-You will need to follow along in the [Lab Instructions](https://github.com/crtcards1/demo_class/blob/main/Lab%20Guide.md)I've provided in this repo. They should be run from the **Ubuntu 24.04 terminal** machine you have set up.
+You will need to follow along in the [Lab Instructions](https://github.com/crtcards1/demo_class/blob/main/Lab%20Guide.md) I've provided in this repo. They should be run from the **Ubuntu 24.04 terminal** machine you have set up.
 
 
 
