@@ -15,7 +15,7 @@ The SOC lead believes the **Dark Kittens** may be behind this. A network sensor 
 
 ### **Step 1 - Prepare for Triage**
 
-**Story:** The packet capture is too large, and it keeps crashing wireshark. So, we need to do some analysis with the command line version of Wireshark, known as `tshark`. 
+**Story:** The packet capture is too large, and it keeps crashing Wireshark. So, we need to do some analysis with the command line version of Wireshark, known as `tshark`. 
 
 Our first goal is to spot odd patterns in traffic that might point to the Dark Kittens infrastructure. Let's begin by navigating to `/home/ubuntu/lab` with the command:
 ```bash
