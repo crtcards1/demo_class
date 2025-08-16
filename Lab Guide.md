@@ -4,7 +4,7 @@
 **Goal:** Identify and alert on malicious activity in a Dark Kittens attack using a PCAP and Snort
 
 ## Situation: 
-Globalantics experienced a spike in help desk tickets yesterday. Several employees reported that their browsers redirected them to a fake software update page, after which their systems began acting strangely.
+Globomantics experienced a spike in help desk tickets yesterday. Several employees reported that their browsers redirected them to a fake software update page, after which their systems began acting strangely.
 
 The SOC lead believes the **Dark Kittens** may be behind this. A network sensor captured traffic during one of these incidents. You’ve been tasked to:
 
@@ -29,7 +29,7 @@ sudo unzip 2025-01-22-traffic-analysis-exercise.pcap.zip
 
 The password it prompts for is `infected_20250122`. 
 
-We now have the pcap extracted, lets rename it to make it easy by doing a
+We now have the pcap extracted, let's rename it for simplicity:
 ```bash
 mv 2025-01-22-traffic-analysis-exercise.pcap dark_kittens.pcap
 ```
@@ -38,7 +38,7 @@ If we run the `ls` command, we can see our `dark_kittens.pcap` file is ready for
    ![Prepare_triage](Screenshots/1.png)
 
 ---
-### **Step 2 — First Pass with `tshark`: Top Talkers**
+### **Step 2 - First Pass with `tshark`: Top Talkers**
 
 As we dive into the network traffic captured in `dark_kittens.pcap`, the first step is to identify the most active hosts communicating with our internal Globomantics network. Run the following command:
 ```bash
@@ -60,7 +60,7 @@ We also see that **45.125.66.32** and **5.252.153.241** dominate the conversatio
 Mapping these “top talkers” gives us the initial view of where to focus our defensive measures, highlighting which sessions might warrant deeper packet inspection and eventual Snort alert rules.
 
 ---
-### **Step 3 — Identify Suspicious DNS Queries**
+### **Step 3 - Identify Suspicious DNS Queries**
 
 Now we have an update from the SOC lead:
 
@@ -75,7 +75,6 @@ tshark -r dark_kittens.pcap -Y "dns" -T fields -e ip.src -e ip.dst -e dns.qry.na
 - `-r dark_kittens.pcap` ->  Read packets from the PCAP file.
 - `-Y "dns"` ->  Filter to show only DNS packets.
 - `-T fields` ->  Output specific fields instead of the full packet details.
-- `-e frame.number` ->  Packet number.
 - `-e ip.src` ->  Source IP of the packet.
 - `-e ip.dst` ->  Destination IP.
 - `-e dns.qry.name` ->  The queried domain name.
@@ -90,11 +89,11 @@ While there are a lot of results to sift through, we can see that there are a fe
 **google-authenticator.burleson-appliance.net**
 
 ---
-### **Step 4- Prepare for Triage**
+### **Step 4 - Prepare for Triage**
 
-Passing along the what we found, the SOC lead confirms those DNS queries were identified in the threat intelligence report. The report also indicated that the C2 servers associated with those domains were ones previously identified in our top talkers section: 
+Based on our findings, the SOC lead confirms those DNS queries were identified in the threat intelligence report. The report also indicated that the C2 servers associated with those domains were ones previously identified in our top talkers section: 
 - `5.252.153.241`
-- `45.125.66.32
+- `45.125.66.32`
 - `45.125.66.252`
 
 These are the hosts we want Snort to monitor. Snort rules are usually stored in `/etc/snort/rules/` or `/etc/snort/rules/local.rules`. Let's navigate to the directory to update our rule file. 
@@ -106,7 +105,7 @@ sudo nano local.rules
 ```
 ![snort_dir](Screenshots/5.png)
 
-Inside the local.rules, we want to paste the following. 
+Inside the `local.rules` we want to paste the following: 
 ```bash
 ##Alert on traffic to Dark Kittens C2 IPs
 alert ip any any -> 5.252.153.241 any (msg:"Dark Kittens C2 detected - 5.252.153.241"; sid:1000001; rev:1;)
@@ -117,9 +116,9 @@ In a Snort rule, each component serves a specific purpose. The `alert ip any any
 
 
 ![snort_rules](Screenshots/6.png)
-To save our changes we enter `Control + X` to exit, type `Y` to confirm saving our newly written snort rules, and `enter`.
+To save our changes we enter `Control + X` to exit, type `Y` to confirm saving our newly written Snort rules, and `Enter`.
 
-With our custom Snort rules in place for the Dark Kittens C2 IPs, we now verify that our defensive measures are effective. By running Snort in PCAP mode against `dark_kittens.pcap`, any attempts by the internal host to communicate with the identified C2 IPs (`5.252.153.241`, `45.125.66.32`, `45.125.66.252`) will trigger alerts directly in the console. First, were going to create a quick custom snort.conf file for testing purpose, so we don't test against all the snort rules in the system.
+With our custom Snort rules in place for the Dark Kittens C2 IPs, we now verify that our defensive measures are effective. By running Snort in PCAP mode against `dark_kittens.pcap`, any attempts by the internal host to communicate with the identified C2 IPs (`5.252.153.241`, `45.125.66.32`, `45.125.66.252`) will trigger alerts directly in the console. First, we're going to create a quick custom `snort.conf` file for testing purposes, so we don't test against all the Snort rules in the system.
 
 ```bash
 sudo nano /etc/snort/snort_local.conf
@@ -141,10 +140,10 @@ include $RULE_PATH/local.rules
 # Step 3: Output configuration
 output alert_fast: stdout
 ```
-Ensure to save just like we did previously with `Control + X`, `Y`, and `enter`. 
+Save the file as before by pressing `Control + X`, `Y`, and `Enter`. 
 
 
-Now lets have snort validate our configuration file to check for errors:
+Let's have Snort validate our configuration file to check for errors:
 ```bash
 sudo snort -T -c /etc/snort/snort_local.conf
 ```
